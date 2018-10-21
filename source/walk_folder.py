@@ -3,7 +3,7 @@ import os
 from data import DirectoryInfo
 
 
-def run(path, folder_depth=4, limit_folder_count=None):
+def run(path, folder_depth=None, limit_folder_count=None):
     path = unicode(path, 'utf-8')
     root = DirectoryInfo(name=path)
     index = 0

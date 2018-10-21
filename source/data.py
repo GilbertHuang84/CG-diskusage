@@ -25,6 +25,16 @@ class DirectoryInfo(object):
             file_size = os.stat(file_path).st_size
             self.size += file_size
 
+    def get_children_by_level(self, level):
+        for child in self._dict_children.values():
+            if child.level < level:
+                for grandson in child.get_children_by_level(level=level):
+                    yield grandson
+            if child.level == level:
+                yield child
+        if self.level == level:
+            yield self
+
     def get_child(self, child_path, depth=0, max_depth=None):
         if depth == 0:
             format_string = u'{}{}'.format(self.name, os.sep)
@@ -34,14 +44,11 @@ class DirectoryInfo(object):
             return self
 
         split_child_path = child_path.split(os.sep, 1)
-        if len(split_child_path) < 1:
+        if not split_child_path:
             return self
 
         current_child_path = split_child_path[0]
-        if current_child_path in self._dict_children:
-            child = self._dict_children[current_child_path]
-        else:
-            child = DirectoryInfo(current_child_path, parent=self)
+        child = self._dict_children.get(current_child_path) or DirectoryInfo(current_child_path, parent=self)
         if len(split_child_path) == 1:
             return child
 
@@ -52,21 +59,32 @@ class DirectoryInfo(object):
     def children_info(self):
         result = OrderedDict({
             '`total_size': human_size(self.total_size),
+            '`part_path': self.part_path,
         })
         for child_name, child_item in self._dict_children.items():
             result[child_item.full_path] = child_item.children_info
         return result
 
-    @property
-    def full_path(self):
+    def _get_path(self, is_full_path=False):
         if self.parent:
-            parent_name = self.parent.full_path
-            if parent_name.endswith(os.sep):
+            parent_name = self.parent._get_path(is_full_path=is_full_path)
+            if not parent_name or parent_name.endswith(os.sep):
                 return u'{}{}'.format(parent_name, self.name)
             else:
                 return u'{}{}{}'.format(parent_name, os.sep, self.name)
         else:
-            return self.name
+            if is_full_path:
+                return self.name
+            else:
+                return ''
+
+    @property
+    def full_path(self):
+        return self._get_path(is_full_path=True)
+
+    @property
+    def part_path(self):
+        return self._get_path(is_full_path=False)
 
     @property
     def sub_size(self):
