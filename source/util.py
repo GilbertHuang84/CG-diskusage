@@ -1,12 +1,12 @@
-from constant import size_unit, size_diff, size_round
+import constant
 
 
 def human_size(number):
     current_idx = 0
     result = float(number)
-    while result > size_diff:
-        if current_idx >= len(size_unit):
+    while result > constant.size_diff:
+        if current_idx >= len(constant.size_unit):
             break
-        result = result / size_diff
+        result = result / constant.size_diff
         current_idx += 1
-    return '{} {}'.format(round(result, size_round), size_unit[current_idx])
+    return '{} {}'.format(round(result, constant.size_round), constant.size_unit[current_idx])
