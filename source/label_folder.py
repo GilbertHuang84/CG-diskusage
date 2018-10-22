@@ -1,5 +1,5 @@
 import os
-from collections import OrderedDict
+import constant
 
 
 def get_sort_keys(path, split_max, current_split=0):
@@ -23,21 +23,20 @@ def get_all_sort_key(path):
             yield os.path.sep.join(sort_key)
 
 
-def collect_sort_key(directory_info):
+def collect_sort_key(directory_info, max_level):
     result = {}
-    for child in directory_info.get_children_by_level(level=3):
+    for child in directory_info.get_children_by_level(level=max_level):
         child_path = child.part_path
         for sort_key in get_all_sort_key(child_path):
             sort_value = result.setdefault(sort_key, dict())
 
-            sort_value.setdefault('size', 0)
-            sort_value['size'] += child.total_size
+            sort_value.setdefault(constant.sort_size_name, 0)
+            sort_value[constant.sort_size_name] += child.total_size
 
-            sort_children = sort_value.setdefault('children', list())
+            sort_children = sort_value.setdefault(constant.sort_children_name, list())
             sort_children.append(child)
     return result
 
 
-def sorted_collect_key(collect_key, max_count=10):
-    return OrderedDict(map(lambda x: (x[0], x[1]['size']),
-                           sorted(collect_key.items(), key=lambda item: item[1]['size'], reverse=True))[:max_count])
+def sorted_collect_key(collect_key, max_key=10):
+    return sorted(collect_key.items(), key=lambda item: item[1][constant.sort_size_name], reverse=True)[:max_key]
