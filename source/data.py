@@ -1,6 +1,7 @@
 import os
 from collections import OrderedDict
-from util import human_size
+import constant
+from util import human_size, sorted_dictionary, make_dictionary_by_classification
 
 
 class DirectoryInfo(object):
@@ -100,3 +101,33 @@ class DirectoryInfo(object):
         if self._total_size is None:
             self._total_size = self.sub_size + self.size
         return self._total_size
+
+
+class LabelInfo(object):
+    def __init__(self, collection):
+        self._collection = collection
+        self._sort_dictionary = None
+
+    @property
+    def sort_dictionary(self):
+        if not self._sort_dictionary:
+            self._sort_dictionary = sorted_dictionary(self._collection)
+        return self._sort_dictionary
+
+    def items(self):
+        return self._collection.items()
+
+    def get_keys(self):
+        return self._collection.keys()
+
+    def get_value(self, key):
+        return self._collection.get(key)
+
+    def get_directory_by_key(self, key):
+        return sorted(self.get_value(key=key)[constant.sort_children_name],
+                      key=lambda item: item.total_size, reverse=True)
+
+    def get_children_by_key(self, key, ignore_list=None):
+        dictionary = make_dictionary_by_classification(iterable=self.get_value(key=key)[constant.sort_children_name],
+                                                       ignore_list=ignore_list)
+        return LabelInfo(dictionary)
