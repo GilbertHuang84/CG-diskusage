@@ -52,10 +52,6 @@ def make_dictionary_by_classification(iterable, ignore_list=None):
     return result
 
 
-def make_dictionary_by_directory_info(directory_info, max_level):
-    return make_dictionary_by_classification(directory_info.get_children_by_level(level=max_level))
-
-
 def sorted_dictionary(dictionary, max_key=10):
     if max_key:
         return sorted(dictionary.items(), key=lambda item: item[1][constant.sort_size_name], reverse=True)[:max_key]
