@@ -111,7 +111,7 @@ class LabelInfo(object):
     @property
     def sort_dictionary(self):
         if not self._sort_dictionary:
-            self._sort_dictionary = sorted_dictionary(self._collection)
+            self._sort_dictionary = sorted_dictionary(self._collection, max_key=None)
         return self._sort_dictionary
 
     def items(self):
