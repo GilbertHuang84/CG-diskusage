@@ -52,13 +52,28 @@ class DirectoryDetectWindow(QWidget):
         self.guide_layout.setAlignment(Qt.AlignLeft)
         return self.guide_layout
 
-    def add_button(self, name, store_list):
+    def refresh_trees(self, store_list, ignore_list):
+        self._refresh_key_tree(store_list, ignore_list=ignore_list)
+        self._refresh_value_tree(store_list)
+
+    def add_button(self, name, store_list, ignore_list=None):
         button = QPushButton(name)
         button.setFixedSize(60, 35)
-        self._button_list.append((name, store_list))
+        item = (name, button, store_list, ignore_list)
+        self._button_list.append(item)
         self.guide_layout.addWidget(button)
-        self._refresh_key_tree(store_list)
-        self._refresh_value_tree(store_list)
+        self.refresh_trees(store_list=store_list, ignore_list=ignore_list)
+        button.clicked.connect(lambda: self._set_button(item=item))
+
+    def _set_button(self, item):
+        index_item = self._button_list.index(item)
+
+        if len(self._button_list) > index_item + 1:
+            for name, button, store_list, ignore_list in self._button_list[index_item + 1:]:
+                button.setParent(None)
+
+        name, button, store_list, ignore_list = item
+        self.refresh_trees(store_list=store_list, ignore_list=ignore_list)
 
     def _init_detail_layout(self):
         detail_layout = QGridLayout()
@@ -109,13 +124,13 @@ class DirectoryDetectWindow(QWidget):
             store_list.extend(item['children'])
 
         store_list = list(set(store_list))
-        self.add_button(select_data, store_list or list())
+        self.add_button(select_data, store_list or list(), ignore_list=ignore_list)
 
     def _get_size(self, size):
         return '{} <> {}%'.format(human_size(size), round(size * 100 / self._walk_folder.total_size, 2))
 
-    def _refresh_key_tree(self, directory_info):
-        info = LabelInfo(make_dictionary_by_classification(directory_info))
+    def _refresh_key_tree(self, directory_info, ignore_list=None):
+        info = LabelInfo(make_dictionary_by_classification(directory_info, ignore_list))
 
         # Clear
         for _ in range(self.key_tree.topLevelItemCount()):
